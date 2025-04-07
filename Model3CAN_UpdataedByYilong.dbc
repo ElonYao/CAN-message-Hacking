@@ -2366,7 +2366,7 @@ BO_ 306 ID132HVBattAmpVolt: 8 VehicleBus
  SG_ SmoothBattCurrent132 : 16|16@1- (-0.1,0) [-3276.7|3276.7] "A"  Receiver
 
 BO_ 294 ID126RearHVStatus: 8 VehicleBus
- SG_ RearHighVoltage126 : 0|10@1+ (1,-1) [-1|1022] "V"  Receiver
+ SG_ RearHighVoltage126 : 0|10@1+ (0.5,0) [0|500] "V"  Receiver
  SG_ RearMotorCurrent126 : 16|10@1+ (1,-1) [-1|1022] "A"  Receiver
 
 BO_ 421 ID1A5FrontHVStatus: 3 VehicleBus
