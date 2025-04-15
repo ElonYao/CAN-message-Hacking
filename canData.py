@@ -137,13 +137,13 @@ def blf2mat():
 """"
 #--------------------------------------main flow----------------------------------------------
 #file directory input
-#filePath=dataDirectory()
-""""
+filePath=dataDirectory()
+
 while(not filePath=='q'):
     #splitCSV(filePath,200000)
     #messagePrintAll(filePath)
-    #messageStatistics(filePath)
+    messageStatistics(filePath)
     #messagePrint(filePath)
-    blf2mat()
+    
     filePath=dataDirectory()
-"""
+
