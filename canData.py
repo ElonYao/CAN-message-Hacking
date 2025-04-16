@@ -140,6 +140,7 @@ def blf2mat():
 filePath=dataDirectory()
 
 while(not filePath=='q'):
+    #dataExtract(filePath)#execute this first
     #splitCSV(filePath,200000)
     #messagePrintAll(filePath)
     messageStatistics(filePath)
