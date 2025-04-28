@@ -1,0 +1,52 @@
+/*@!Encoding:1252*/
+includes
+{
+  
+  
+}
+
+variables
+{
+  msTimer diagTimer;
+  message 0x7df requestMsg;
+  message 0x7e0 flowControlMsg;
+  int counter=0;
+  int index;
+}
+on start
+{
+  setTimer(diagTimer,0);
+}
+
+on timer diagTimer
+{
+  switch(counter)
+  {
+    case 0:
+      requestMsg.dlc=8;
+      requestMsg.byte(0)=0x02;
+      requestMsg.byte(1)=0x09;
+      requestMsg.byte(2)=0x02;
+      for(index=3;index<8;index++)
+      {
+        requestMsg.byte(index)=0x00;
+      }
+      output(requestMsg);
+      setTimer(diagTimer,50);
+      counter++;
+      break;
+    case 1:
+      flowControlMsg.dlc=8;
+      flowControlMsg.byte(0)=0x30;
+      flowControlMsg.byte(1)=0x00;
+      flowControlMsg.byte(2)=0x00;
+      for(index=3;index<8;index++)
+      {
+        flowControlMsg.byte(index)=0x00;
+      }
+      output(flowControlMsg);
+      break;
+    default:
+        break;
+  }
+}

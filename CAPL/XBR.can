@@ -1,0 +1,129 @@
+/*@!Encoding:1252*/
+includes
+{
+  
+}
+
+variables
+{
+  message 0xC042B2Dx XBR ={DLC=8,DIR=TX};
+  float accelerationTarget=0;
+  float accelerationSetpoint=0;
+  byte rampStatus=0;//0 for no ramp; 1 for ramp
+  float maxSlope=0;// need to be defined if ramp is necessary 
+  float maxAcceleration=6.0;
+  byte xbrSadd=0x2D;
+  byte EBI_mode=0;
+  byte xbrPrio=0;
+  byte xbrCM=0;
+  byte xbrCounter=0;
+  byte xbrChecksum=0;
+  byte xbrChannel=1;
+  msTimer xbrTimer;
+  byte messageCounter=0;
+  byte timerActive=20;
+  byte timerPassive=200;
+
+  float maxDelta;
+}
+
+on start
+{
+  setTimer(xbrTimer,timerActive);
+   maxDelta=maxSlope*timerActive*0.001;
+}
+on timer xbrTimer
+{
+  float error;
+  byte index;
+  word tempAcc;
+  byte tempData[7];
+  messageCounter++;
+  messageCounter&=0x0F;
+  if(rampStatus)
+  {
+    error=accelerationTarget-accelerationSetpoint;
+    accelerationSetpoint+=fsat(error,maxDelta,-maxDelta);
+    accelerationSetpoint=fsat(accelerationSetpoint,maxAcceleration,-maxAcceleration);  
+  }
+  else{
+    accelerationSetpoint=accelerationTarget;
+  }
+  tempAcc=(accelerationSetpoint+15.687)*2048;
+  XBR.byte(0)=tempAcc&0xFF;
+  XBR.byte(1)=(tempAcc>>8)&0xFF;
+  
+  XBR.byte(2)=0;
+  XBR.byte(2)|=EBI_mode&0x03;
+  XBR.byte(2)|=(xbrPrio&0x03)<<2;
+  XBR.byte(2)|=(xbrCM&0x03)<<4;
+  XBR.byte(2)|=0xC0;//padding
+  //padding 
+  
+  XBR.byte(3)=0xFF;
+  XBR.byte(4)=0xFF;
+  XBR.byte(5)=0xFF;
+  XBR.byte(6)=0xFF;
+  for(index=0;index<7;index++)
+  {
+    tempData[index]=XBR.byte(index);
+  }
+  XBR.byte(7)=messageCounter | (calChecksum(XBR.id,tempData,messageCounter)<<4);
+  
+  output(XBR);
+  if(xbrCM)
+  {
+    setTimer(xbrTimer,timerActive);
+  }
+  else
+  {
+    setTimer(xbrTimer,timerPassive);
+  }
+  
+}
+on key 'a'
+{
+  accelerationSetpoint=0;
+  accelerationTarget=-2.5;
+  xbrCM=2;
+  write("Test begin");
+}
+on key 'r'
+{
+  accelerationSetpoint=0;
+  accelerationTarget=0;
+  xbrCM=0;
+  write("Test finished");
+}
+
+float fsat(float input,float max,float min)
+{
+  float result;
+  if(input>max)
+  {
+    result=max;
+  }
+  else if(input<min)
+  {
+    result=min;
+  }
+  else
+  {
+    result=input;
+  }
+  return result;
+}
+
+byte calChecksum(dword messageID,byte messageData[],byte messageCounter)
+{
+  byte checksum=0;
+  byte index;
+  for(index=0;index<7;index++)
+  {
+    checksum+=messageData[index];
+  }
+  checksum+=messageCounter&0x0F;
+  checksum+=messageID&0xFF+(messageID>>8)&0xFF+(messageID>>16)&0xFF+(messageID>>24)&0xFF;
+  checksum=(checksum>>4+checksum)&0x0F;
+  return checksum;
+}
